@@ -1,0 +1,6 @@
+@CallExtrenalServiceInDotnet_HostAddress = http://localhost:5185
+
+GET {{CallExtrenalServiceInDotnet_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
