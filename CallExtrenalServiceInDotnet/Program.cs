@@ -1,4 +1,5 @@
 using CallExtrenalServiceInDotnet.Services;
+using Refit;
 
 namespace CallExtrenalServiceInDotnet
 {
@@ -36,6 +37,10 @@ namespace CallExtrenalServiceInDotnet
 
                 client.BaseAddress = new Uri("https://api.restful-api.dev");
             });
+
+            builder.Services
+                .AddRefitClient<IProductApi>()
+                .ConfigureHttpClient(c => c.BaseAddress = new Uri("https://api.restful-api.dev"));
 
             var app = builder.Build();
 

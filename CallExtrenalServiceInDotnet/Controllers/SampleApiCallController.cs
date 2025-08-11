@@ -11,13 +11,17 @@ namespace CallExtrenalServiceInDotnet.Controllers
         private readonly ILogger<SampleApiCallController> _logger;
         private readonly IHttpClientFactory _factory;
         private readonly ProductService _productService;
-        public SampleApiCallController(ILogger<SampleApiCallController> logger,
+        private readonly IProductApi _productApi;
+        public SampleApiCallController(
+            ILogger<SampleApiCallController> logger,
             IHttpClientFactory factory,
-            ProductService productService)
+            ProductService productService,
+            IProductApi productApi)
         {
             _logger = logger;
             _factory = factory;
             _productService = productService;
+            _productApi = productApi;
         }
 
         [HttpGet]
@@ -73,5 +77,11 @@ namespace CallExtrenalServiceInDotnet.Controllers
             return Ok(products);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ByRefit()
+        {
+            var products = await _productApi.GetProductsAsync();
+            return Ok(products);
+        }
     }
 }
