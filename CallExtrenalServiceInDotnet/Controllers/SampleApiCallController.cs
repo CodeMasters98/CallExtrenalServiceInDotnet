@@ -1,6 +1,7 @@
 using CallExtrenalServiceInDotnet.Models;
 using CallExtrenalServiceInDotnet.Services;
 using Microsoft.AspNetCore.Mvc;
+using Polly;
 
 namespace CallExtrenalServiceInDotnet.Controllers
 {
@@ -75,6 +76,39 @@ namespace CallExtrenalServiceInDotnet.Controllers
             var products = await client.GetFromJsonAsync<List<Product>>($"objects");
 
             return Ok(products);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DirectHttpClientWithPolly()
+        {
+            var httpClient = new HttpClient();
+
+            // Define a basic retry policy that retries 3 times with a 2-second delay between retries.
+            var retryPolicy = Policy.Handle<HttpRequestException>()
+                                   .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(2));
+            try
+            {
+                // Execute the API call with the retry policy.
+                await retryPolicy.ExecuteAsync(async () =>
+                {
+                    // Replace the following line with your actual API call.
+                    var response = await httpClient.GetAsync("https://apssi.example.com");
+                    // Check the response status and throw an exception if it's not successful.
+                    response.EnsureSuccessStatusCode();
+                    // Process the response here (e.g., deserialize JSON, etc.).
+                });
+            }
+            catch (HttpRequestException ex)
+            {
+                // Handle the HttpRequestException or log it as needed.
+                Console.WriteLine($"An HTTP error occurred: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle other exceptions or log them as needed.
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+            return Ok();
         }
 
         [HttpGet]

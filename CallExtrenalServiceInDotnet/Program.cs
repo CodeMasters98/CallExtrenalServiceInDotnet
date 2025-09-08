@@ -1,4 +1,6 @@
 using CallExtrenalServiceInDotnet.Services;
+using Polly;
+using Polly.Extensions.Http;
 using Refit;
 
 namespace CallExtrenalServiceInDotnet
@@ -15,6 +17,28 @@ namespace CallExtrenalServiceInDotnet
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            //retry policy (exponential backoff)
+            static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+            {
+                return HttpPolicyExtensions
+                    .HandleTransientHttpError()
+                    .WaitAndRetryAsync(
+                        3,                  // retry count
+                        retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) // 2s, 4s, 8s
+                    );
+            }
+
+            //circuit breaker policy
+            static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+            {
+                return HttpPolicyExtensions
+                    .HandleTransientHttpError()
+                    .CircuitBreakerAsync(
+                        2,                  // break after 2 consecutive failures
+                        TimeSpan.FromSeconds(30) // stay open for 30s
+                    );
+            }
 
             builder.Services.AddHttpClient("restful", (serviceProvider, client) =>
             {
